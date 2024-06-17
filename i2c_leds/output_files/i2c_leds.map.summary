@@ -1,0 +1,14 @@
+Analysis & Synthesis Status : Successful - Mon Jun 17 11:15:13 2024
+Quartus Prime Version : 23.1std.0 Build 991 11/28/2023 SC Lite Edition
+Revision Name : i2c_leds
+Top-level Entity Name : i2c_leds
+Family : Cyclone IV E
+Total logic elements : 189
+    Total combinational functions : 165
+    Dedicated logic registers : 92
+Total registers : 92
+Total pins : 15
+Total virtual pins : 0
+Total memory bits : 0
+Embedded Multiplier 9-bit elements : 0
+Total PLLs : 0

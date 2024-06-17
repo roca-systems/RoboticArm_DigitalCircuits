@@ -1,0 +1,84 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
+
+entity i2c_leds is 
+    port (
+        scl               : inout std_logic;
+        sda               : inout std_logic;
+        clk               : in    std_logic;
+        rst               : in    std_logic;
+        btn_1             : in    std_logic;  -- Botón 1
+        btn_2             : in    std_logic;  -- Botón 2
+        btn_3             : in    std_logic;  -- Botón 3
+        btn_4             : in    std_logic;  -- Botón 4
+        led_o             : out   std_logic_vector(7 downto 0)
+    );
+end entity;
+
+architecture RTL of i2c_leds is
+    signal read_req          : std_logic;
+    signal data_to_master    : std_logic_vector(7 downto 0);
+    signal data_valid        : std_logic;
+    signal data_from_master  : std_logic_vector(7 downto 0);
+    signal data_reg          : std_logic_vector(7 downto 0);
+
+    -- Variable para almacenar el número del botón presionado
+    signal button_pressed    : integer range 0 to 3;
+begin
+    i2c_slave0: entity work.I2C_slave(arch) port map (
+        scl, sda, clk, rst, read_req, data_to_master, data_valid, data_from_master
+    );
+
+    -- Lógica para determinar qué botón se ha presionado
+    process(clk, rst)
+    begin
+        if rst = '0' then
+            button_pressed <= 0;
+        elsif rising_edge(clk) then
+            if btn_1 = '0' then
+                button_pressed <= 1;
+            elsif btn_2 = '0' then
+                button_pressed <= 2;
+            elsif btn_3 = '0' then
+                button_pressed <= 3;
+            elsif btn_4 = '0' then
+                button_pressed <= 4;
+            end if;
+        end if;
+    end process;
+
+    -- Asignación de datos para enviar a Arduino
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            case button_pressed is
+                when 1 =>
+                    data_to_master <= "00000001"; -- Enviar 1 cuando se presiona el botón 1
+                when 2 =>
+                    data_to_master <= "00000010"; -- Enviar 2 cuando se presiona el botón 2
+                when 3 =>
+                    data_to_master <= "00000011"; -- Enviar 3 cuando se presiona el botón 3
+                when 4 =>
+                    data_to_master <= "00000100"; -- Enviar 4 cuando se presiona el botón 4
+                when others =>
+                    data_to_master <= (others => '0'); -- Si no se presiona ningún botón, enviar 0
+            end case;
+        end if;
+    end process;
+
+    -- Asignar datos recibidos a la variable data_reg
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            if data_valid = '1' then
+                data_reg <= data_from_master;
+            end if;
+        end if;
+    end process;
+
+    -- Salida a los LEDs (opcional)
+    led_o <= data_reg;
+
+end architecture;
